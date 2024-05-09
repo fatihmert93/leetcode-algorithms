@@ -4,13 +4,27 @@ using System.Diagnostics;
 
 Console.WriteLine("Hello, World!");
 
-int[] nums = new int[] { 2, 7, 11, 15, 3, 6, 8, 9, 5, 123, 232, 23, 4 };
+int[] nums = new int[] { 2, 7, 11, 15 };
 
-Stopwatch stopwatch = Stopwatch.StartNew();
+Stopwatch stopwatch = new Stopwatch();
+stopwatch.Start();
+
+GC.Collect();
+GC.WaitForPendingFinalizers();
+long memoryBefore = GC.GetTotalMemory(true);
+
 var result = TwoSum(nums, 9);
-long milliseconds = stopwatch.ElapsedMilliseconds;
-
 Console.WriteLine($"Result is {string.Join(",",result)}, expecting is [0, 1]");
+
+long memoryAfter = GC.GetTotalMemory(true);
+
+Console.WriteLine("Başlangıç Bellek: {0} bytes", memoryBefore);
+Console.WriteLine("Bitiş Bellek: {0} bytes", memoryAfter);
+Console.WriteLine("Kullanılan Bellek: {0} bytes", memoryAfter - memoryBefore);
+
+stopwatch.Stop();
+double milliseconds = stopwatch.ElapsedMilliseconds;
+
 
 Console.WriteLine($"Runtime : {milliseconds} ms");
 
@@ -18,17 +32,15 @@ Console.WriteLine($"Runtime : {milliseconds} ms");
 
 int[] TwoSum(int[] nums, int target) {
     
-    List<int> results = new List<int>();
-
-    results = results.Where(v => v <= target).ToList();
-
-    for(int i = 0;i < nums.Count(); i++)
-    {
-        for(int j = 0; j < nums.Count(); j++)
-        {
-            if(i != j && nums[i] + nums[j] == target) results.Add(i);
+    Dictionary<int, int> map = new Dictionary<int, int>();
+    for (int i = 0; i < nums.Length; i++) {
+        int complement = target - nums[i];
+        if (map.ContainsKey(complement)) {
+            return new int[] { map[complement], i };
         }
+
+        map[nums[i]] = i;
     }
 
-    return results.ToArray();
+    return null;
 }
